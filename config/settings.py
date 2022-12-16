@@ -51,7 +51,11 @@ PROJECT_APPS = [
     "rooms.apps.RoomsConfig",
     "medias.apps.MediasConfig",
 ]
-INSTALLED_APPS = SYSTEM_APPS + PROJECT_APPS
+
+THIRD_PARTY = [
+    "rest_framework",
+]
+INSTALLED_APPS = SYSTEM_APPS + THIRD_PARTY + PROJECT_APPS
 
 
 MIDDLEWARE = [
