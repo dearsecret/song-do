@@ -1,7 +1,7 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from .serializers import KindSerializer, FacilitySerializer
-from .models import Kind, Facility
+from .serializers import KindSerializer, FacilitySerializer , RoomSerializer
+from .models import Kind, Facility , Room
 
 from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_200_OK, HTTP_204_NO_CONTENT
 from rest_framework.exceptions import NotFound
@@ -25,6 +25,7 @@ class Kinds(APIView):
 
 
 class KindDetail(APIView):
+    # authentication_classes
     def get_object(self, pk):
         try:
             return Kind.objects.get(pk=pk)
@@ -68,6 +69,7 @@ class Facilities(APIView):
 
 
 class FacilityDetail(APIView):
+    # authentication_classes
     def get_object(self, pk):
         try:
             return Facility.objects.get(pk=pk)
@@ -90,3 +92,11 @@ class FacilityDetail(APIView):
         facility = self.get_object(pk)
         facility.delete()
         return Response(status=HTTP_204_NO_CONTENT)
+
+class Rooms(APIView):
+    # authentication_classes
+
+    def get(self, request):
+        rooms = Room.objects.all()
+        serializer = RoomSerializer(rooms, many=True)
+        return Response(serializer.data)

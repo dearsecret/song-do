@@ -5,7 +5,7 @@ from .models import User
 class PrivateUserSerializer(ModelSerializer):
     class Meta:
         model = User
-        fileds = (
+        fields = (
             "username",
             "name",
             "avatar",
