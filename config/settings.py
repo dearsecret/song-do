@@ -49,6 +49,7 @@ PROJECT_APPS = [
     "users.apps.UsersConfig",
     "common.apps.CommonConfig",
     "rooms.apps.RoomsConfig",
+    "medias.apps.MediasConfig",
 ]
 INSTALLED_APPS = SYSTEM_APPS + PROJECT_APPS
 
