@@ -47,6 +47,8 @@ SYSTEM_APPS = [
 ]
 PROJECT_APPS = [
     "users.apps.UsersConfig",
+    "common.apps.CommonConfig",
+    "rooms.apps.RoomsConfig",
 ]
 INSTALLED_APPS = SYSTEM_APPS + PROJECT_APPS
 
