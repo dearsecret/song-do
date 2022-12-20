@@ -54,11 +54,13 @@ PROJECT_APPS = [
 
 THIRD_PARTY = [
     "rest_framework",
+    "corsheaders",
 ]
 INSTALLED_APPS = SYSTEM_APPS + THIRD_PARTY + PROJECT_APPS
 
 
 MIDDLEWARE = [
+    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -143,3 +145,6 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 
 AUTH_USER_MODEL = "users.User"
+
+CORS_ALLOWED_ORIGINS = ["http://127.0.0.1:3000"]
+CORS_ALLOW_CREDINTIALS = True
