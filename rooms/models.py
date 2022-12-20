@@ -28,8 +28,9 @@ class Room(TimeStampModel):
     name = models.CharField(max_length=150)
     city = models.CharField(max_length=24)
     address = models.CharField(max_length=250)
-    deposit = models.IntegerField()
-    price = models.IntegerField()
+    deposit = models.PositiveIntegerField()
+    price = models.PositiveIntegerField()
+    area = models.PositiveIntegerField()
 
     facilities = models.ManyToManyField("Facility", related_name="rooms", blank=True)
     kind = models.ForeignKey(

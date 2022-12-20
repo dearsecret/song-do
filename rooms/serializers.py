@@ -1,28 +1,36 @@
 from rest_framework import serializers
 from .models import Kind, Facility, Room
-from users.serializers import PrivateUserSerializer
+from users.serializers import PublicUserSerializer
 
 
 class KindSerializer(serializers.ModelSerializer):
     class Meta:
         model = Kind
-        fields = "__all__"
+        fields = (
+            "pk",
+            "name",
+        )
 
 
 class FacilitySerializer(serializers.ModelSerializer):
     class Meta:
         model = Facility
-        fields = "__all__"
+        fields = (
+            "pk",
+            "name",
+            "description",
+        )
 
 
 class RoomSerializer(serializers.ModelSerializer):
     kind = KindSerializer(read_only=True)
-    host = PrivateUserSerializer(read_only=True)
+    host = PublicUserSerializer(read_only=True)
     is_owner = serializers.SerializerMethodField()
 
     class Meta:
         model = Room
         fields = (
+            "pk",
             "name",
             "city",
             "kind",
@@ -41,7 +49,7 @@ class RoomSerializer(serializers.ModelSerializer):
 class RoomDetailSerializer(serializers.ModelSerializer):
     facilities = FacilitySerializer(many=True, read_only=True)
     kind = KindSerializer(read_only=True)
-    host = PrivateUserSerializer(read_only=True)
+    host = PublicUserSerializer(read_only=True)
     is_owner = serializers.SerializerMethodField()
 
     class Meta:

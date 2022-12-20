@@ -1,3 +1,5 @@
+from django.db import transaction
+
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from .serializers import (
@@ -10,7 +12,7 @@ from medias.serializers import PhotoSerializer
 from .models import Kind, Facility, Room
 
 from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_200_OK, HTTP_204_NO_CONTENT
-from rest_framework.exceptions import NotFound, PermissionDenied
+from rest_framework.exceptions import NotFound, PermissionDenied, ParseError
 
 
 class Kinds(APIView):
@@ -107,6 +109,36 @@ class Rooms(APIView):
         rooms = Room.objects.all()
         serializer = RoomSerializer(rooms, many=True)
         return Response(serializer.data)
+
+    def post(self, request):
+        serializer = RoomDetailSerializer(
+            data=request.data, context={"request": request}
+        )
+
+        if serializer.is_valid():
+            kind_pk = request.data.get("kinds")
+            if not kind_pk:
+                raise ParseError
+            try:
+                kind = Kind.objects.get(pk=kind_pk)
+            except Kind.DoesNotExist:
+                raise NotFound
+            try:
+                with transaction.atomic():
+                    room = serializer.save(host=request.user, kind=kind)
+                    facilities = request.data.get("facilities")
+                    for facility_pk in facilities:
+                        facility = Facilities.objects.get(pk=facility_pk)
+                        room.facilities.add(facility)
+                    serializer = RoomDetailSerializer(
+                        room, context={"request": request}
+                    )
+                    return Response(serializer.data)
+
+            except Exception as E:
+                raise ParseError
+        else:
+            return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
 
 
 class RoomDetail(APIView):
