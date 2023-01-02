@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 import os
 import environ
 from pathlib import Path
+import dateutil
 
 env = environ.Env()
 
@@ -50,7 +51,8 @@ PROJECT_APPS = [
     "common.apps.CommonConfig",
     "rooms.apps.RoomsConfig",
     "medias.apps.MediasConfig",
-    "electrics.apps.ElectricsConfig",
+    "contracts.apps.ContractsConfig",
+    "bills.apps.BillsConfig",
 ]
 
 THIRD_PARTY = [
