@@ -1,6 +1,6 @@
 from django.apps import AppConfig
 
 
-class MediasConfig(AppConfig):
+class NoticesConfig(AppConfig):
     default_auto_field = "django.db.models.BigAutoField"
-    name = "medias"
+    name = "notices"

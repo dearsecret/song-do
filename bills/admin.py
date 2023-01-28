@@ -1,12 +1,12 @@
 from django.contrib import admin
-from .models import Bill, Invoice
+from .models import Bill, Invoice, OwnerCharge
 
 # Register your models here.
 
 
-@admin.action(description="선택된 인보이스 발행을 시작합니다.")
+@admin.action(description="선택된 항목의 입금을 확인으로 변경합니다.")
 def make_publish(self, request, queryset):
-    queryset.update(issue=True)
+    queryset.update(is_payed=True)
 
 
 @admin.register(Bill)
@@ -45,10 +45,33 @@ class BillAdmin(admin.ModelAdmin):
             "전력 정보",
             {
                 "fields": (
+                    "get_usage_sum",
+                    "unit_price",
+                    "total_public",
+                )
+            },
+        ),
+        (
+            "기타",
+            {"fields": ("owner_charge",)},
+        ),
+        (
+            "발행여부",
+            {
+                "fields": (
+                    "is_ready",
+                    "need_update",
+                    "is_issue",
+                ),
+            },
+        ),
+        (
+            "발행 정보",
+            {
+                "fields": (
                     "usage_sum",
                     "ratio",
-                    "unit_price",
-                )
+                ),
             },
         ),
         (
@@ -64,41 +87,46 @@ class BillAdmin(admin.ModelAdmin):
     )
     list_display = (
         "__str__",
-        "total",
-        "public_share",
-        "public_usage",
+        "is_issue",
         "total_public",
         "floor",
-        "none_tax",
-        "usage_sum",
-        "ratio",
         "unit_price",
-        "area_cnt",
+        "area_sum",
     )
 
     readonly_fields = (
         "start_date",
         "usage_sum",
+        "get_usage_sum",
         "ratio",
         "unit_price",
-        "area_cnt",
         "area_sum",
+        "is_ready",
+        "need_update",
+        "total_public",
         "created_at",
         "updated_at",
     )
 
-    def usage_sum(self, obj):
-        return obj.usage_sum()
+    def get_usage_sum(self, obj):
+        return obj.get_usage_sum()
 
     def ratio(self, obj):
         return obj.ratio()
 
-    def unit_price(self, obj):
-        return obj.unit_price()
+    def is_ready(self, obj):
+        return obj.is_ready()
 
-    usage_sum.short_description = "검침량 총합"
+    def need_update(self, obj):
+        if obj.usage_sum != obj.get_usage_sum():
+            return False
+        else:
+            return True
+
+    is_ready.short_description = "발행 준비"
+    need_update.short_description = "검산"
+    get_usage_sum.short_description = "검침량 총합"
     ratio.short_description = "소실율"
-    unit_price.short_description = "단위당 단가"
 
 
 @admin.register(Invoice)
@@ -111,6 +139,7 @@ class InvoiceAdmin(admin.ModelAdmin):
                     "contract",
                     "bill",
                     "usage",
+                    "ratio_usage",
                 )
             },
         ),
@@ -120,9 +149,6 @@ class InvoiceAdmin(admin.ModelAdmin):
                 "fields": (
                     "basic",
                     "add_unit",
-                    "without_tax",
-                    "subtract_tax",
-                    "add_tax",
                     "public",
                     "area_fee",
                 ),
@@ -132,14 +158,16 @@ class InvoiceAdmin(admin.ModelAdmin):
         (
             "청구요금",
             {
-                "fields": ("total",),
+                "fields": (
+                    "total",
+                    "is_payed",
+                ),
             },
         ),
         (
             "데이터 정보",
             {
                 "fields": (
-                    "is_issue",
                     "created_at",
                     "updated_at",
                 ),
@@ -150,74 +178,47 @@ class InvoiceAdmin(admin.ModelAdmin):
 
     list_display = (
         "contract",
-        "is_issue",
-        "bill",
         "usage",
+        "bill",
         "without_tax",
-        "subtract_tax",
+        "tax",
         "add_tax",
         "public",
         "area_fee",
         "total",
+        "is_payed",
     )
 
     readonly_fields = (
         "bill",
         "contract",
         "basic",
-        "usage_ratio",
         "public",
         "area_fee",
-        "without_tax",
-        "subtract_tax",
-        "add_tax",
-        "without_tax",
-        "add_unit",
-        "add_tax",
         "total",
+        "ratio_usage",
+        "add_unit",
+        "without_tax",
+        "tax",
+        "add_tax",
         "created_at",
         "updated_at",
     )
     actions = (make_publish,)
     list_filter = (
         "bill__bill_date",
-        "is_issue",
+        "is_payed",
+        "bill",
     )
     ordering = (
-        "bill",
+        "-bill",
         "contract",
     )
 
-    def public(self, obj):
-        return obj.public()
 
-    def basic(self, obj):
-        return int(obj.bill.basic * obj.contract.area / (obj.bill.area_sum))
-
-    def add_unit(self, obj):
-        if obj.bill.unit_price() and obj.usage:
-            return int(obj.bill.unit_price() * obj.usage)
-
-    def add_tax(self, obj):
-        return obj.add_tax()
-
-    def area_fee(self, obj):
-        return obj.area_fee()
-
-    def without_tax(self, obj):
-        return obj.without_tax()
-
-    def total(self, obj):
-        return f"{obj.total()} 원"
-
-    def subtract_tax(self, obj):
-        return obj.add_tax() - obj.without_tax()
-
-    basic.short_description = "전기 기본요금"
-    add_unit.short_description = "전기사용량 요금"
-    public.short_description = "2. 공용전기료 합계"
-    area_fee.short_description = "3. 기본관리비"
-    without_tax.short_description = "전기료 - 세전 전기료"
-    subtract_tax.short_description = "부가세"
-    add_tax.short_description = "1. 전기료 - 세후 합계"
-    total.short_description = "1+2+3 합계"
+@admin.register(OwnerCharge)
+class InvoiceAdmin(admin.ModelAdmin):
+    list_display = (
+        "title",
+        "charge",
+    )

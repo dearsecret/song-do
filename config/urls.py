@@ -20,8 +20,9 @@ admin.site.site_header = "송도 관리자"
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path("rooms/", include("rooms.urls")),
-    path("users/", include("users.urls")),
-    path("contracts/", include("contracts.urls")),
-    path("invoices/", include("bills.urls")),
+    path("api/v1/users/", include("users.urls")),
+    path("api/v1/contracts/", include("contracts.urls")),
+    path("api/v1/invoices/", include("bills.urls")),
+    path("api/v1/notices/", include("notices.urls")),
+    path("api/v1/informations/", include("informations.urls")),
 ]

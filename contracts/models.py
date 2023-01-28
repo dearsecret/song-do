@@ -5,17 +5,21 @@ from common.models import TimeStampModel
 
 
 class Contract(TimeStampModel):
-    name = models.CharField(max_length=150)
-    start = models.DateField()
-    end = models.DateField()
+    name = models.CharField(max_length=150, verbose_name="호실")
+    start = models.DateField(verbose_name="시작일")
+    end = models.DateField(verbose_name="종료일")
 
-    area = models.IntegerField()
-    area_fee = models.IntegerField()
-    deposit = models.IntegerField()
-    rent = models.IntegerField()
+    area = models.IntegerField(verbose_name="평형")
+    area_fee = models.IntegerField(verbose_name="평당 관리비")
+    deposit = models.IntegerField(verbose_name="보증금")
+    rent = models.IntegerField(verbose_name="월세")
 
     customer = models.ForeignKey(
-        "users.User", null=True, blank=True, on_delete=models.CASCADE
+        "users.User",
+        null=True,
+        blank=True,
+        on_delete=models.CASCADE,
+        verbose_name="계약자 정보",
     )
 
     def __str__(self):

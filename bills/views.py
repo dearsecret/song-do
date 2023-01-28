@@ -1,8 +1,12 @@
-from django.shortcuts import render
+from django.utils import timezone
 from rest_framework.views import APIView
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import (
+    IsAuthenticated,
+    IsAdminUser,
+)
 from rest_framework.exceptions import NotFound, PermissionDenied
 from rest_framework.response import Response
+import requests
 from .serializers import (
     BillListSerializer,
     BillDetailSerializer,
@@ -39,8 +43,19 @@ class InvoiceList(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        # 권한 수정 요망
-        invoice = Invoice.objects.all()
+        try:
+            page = request.data.get("page", 1)
+            page = int(page)
+        except ValueError:
+            page = 1
+        page_size = 6
+        start = (page - 1) * page_size
+        end = start + page_size
+
+        if request.user.is_staff:
+            invoice = Invoice.objects.all()[start:end]
+        else:
+            invoice = Invoice.objects.filter(contract__customer=request.user)[start:end]
         serializer = InvoiceListSerializer(invoice, many=True)
         return Response(serializer.data)
 
@@ -58,4 +73,7 @@ class InvoiceDetail(APIView):
         # 권한 수정 요망
         invoice = self.get_object(pk)
         serializer = InvoiceDetailSerializer(invoice)
+        if not request.user.is_host:
+            if request.user != invoice.contract.customer:
+                raise PermissionDenied()
         return Response(serializer.data)

@@ -28,6 +28,7 @@ environ.Env.read_env(os.path.join(BASE_DIR, ".env"))
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = env("SECRET_KEY")
+BILLING_KEY = env("BILLING_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -49,10 +50,10 @@ SYSTEM_APPS = [
 PROJECT_APPS = [
     "users.apps.UsersConfig",
     "common.apps.CommonConfig",
-    "rooms.apps.RoomsConfig",
-    "medias.apps.MediasConfig",
     "contracts.apps.ContractsConfig",
     "bills.apps.BillsConfig",
+    "notices.apps.NoticesConfig",
+    "informations.apps.InformationsConfig",
 ]
 
 THIRD_PARTY = [

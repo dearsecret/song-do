@@ -3,9 +3,13 @@ from django.db import models
 from common.models import TimeStampModel
 from contracts.models import Contract
 from django.utils import timezone
+from notices.models import Memo
 
 
 class Bill(TimeStampModel):
+    is_issue = models.BooleanField(default=False, verbose_name="발행여부")
+    ratio = models.FloatField(null=True, verbose_name="소실율", help_text="발행시 계산합니다.")
+    start_date = models.DateField(verbose_name="시작일")
     bill_date = models.DateField(
         default=timezone.now,
         verbose_name="청구일",
@@ -25,88 +29,124 @@ class Bill(TimeStampModel):
         verbose_name="한전 청구요금", help_text="부가세가 포함된 4층 전기료 청구요금"
     )
     basic = models.PositiveIntegerField(
-        default=0, verbose_name="한전 기본요금", help_text="적용요금에 따른 기본 요금"
+        verbose_name="한전 기본요금", help_text="적용요금에 따른 기본 요금"
     )
     usage = models.PositiveIntegerField(
         blank=True, verbose_name="당월 사용량(kw)", help_text="청구서에 기재된 전력사용량"
     )
-    area_cnt = models.PositiveIntegerField(default=0)
-    area_sum = models.PositiveIntegerField(default=0, blank=True, verbose_name="해당층 면적")
+    usage_sum = models.PositiveIntegerField(null=True, verbose_name="사용자 검침량 총합")
+    area_sum = models.PositiveIntegerField(verbose_name="임대면적 합계")
+    public_share = models.PositiveIntegerField(verbose_name="공용 기본전기료")
+    public_usage = models.PositiveIntegerField(verbose_name="공용 사용전기료")
+    total_public = models.PositiveIntegerField(verbose_name="공용전기료 총합")
+    none_tax = models.PositiveIntegerField(verbose_name="세전 사용량 전기료")
+    unit_price = models.PositiveIntegerField(verbose_name="단위당 단가")
 
-    def start_date(self):
+    owner_charge = models.ManyToManyField(
+        "bills.OwnerCharge",
+        related_name="bills",
+        blank=True,
+        verbose_name="임대인 부담",
+    )
+
+    def get_start_date(self):
         return self.bill_date + relativedelta(months=-1, days=1)
 
-    def public_share(self):
-        # 공용 전기료 - 기본 지분율 계산
-        return self.maintanance * 0.4 * 0.15
+    def get_public_share(self):
+        # 기본 지분율 계산
+        return round(self.maintanance * 0.4 * 0.15, 0)
 
-    def public_usage(self):
-        # 공용 전기료 - 전기 사용료 계산
-        return (self.maintanance * 0.6) * (self.floor / self.total)
+    def get_public_usage(self):
+        # 전기 사용료 계산
+        return int(((self.maintanance * 0.6) / self.total) * self.floor)
 
-    def total_public(self):
+    def get_total_public(self):
         # 공용 - 공용 전기료 합산
-        return self.public_share() + self.public_usage()
+        return self.get_public_share() + self.get_public_usage()
 
-    def none_tax(self):
+    def get_none_tax(self):
         # 4층 세전 전력사용료 계산
-        if self.floor and self.basic:
-            return (self.floor - self.basic * 1.1) / 1.1
+        if (self.floor - self.basic * 1.1) / 1.1 > 0:
+            return int((self.floor - self.basic * 1.1) / 1.1)
+        return 0
 
-    def usage_sum(self):
-        # 각호실 사용량 계산
-        sum = 0
-        for invoice in self.invoices.all():
-            if invoice.usage:
-                sum += invoice.usage
-        return sum
-
-    def unit_price(self):
+    def get_unit_price(self):
         # 전력 단가 계산
-        if self.none_tax() and self.usage:
-            return self.none_tax() / self.usage
+        return self.none_tax / self.usage
 
-    def ratio(self):
-        # 소실율 계산
-        if self.usage_sum():
-            return self.usage / self.usage_sum()
+    def get_ratio(self):
+        return self.usage / self.get_usage_sum()
 
-    def save(self, **kwargs):
+    # -----하단부 반드시 메서드로 할 것------
+    def get_usage_sum(self):
+        # 각호실 사용량 계산
+        if self.invoices.all():
+            sum = 0
+            for invoice in self.invoices.all():
+                if invoice.usage:
+                    sum += invoice.usage
+            return sum
+
+    def is_ready(self):
+        if self.pk:
+            if self.invoices:
+                if None in [invoice.usage for invoice in self.invoices.all()]:
+                    return False
+                else:
+                    return True
+
+    # -------------------------------
+    def valid_contracts(self):
+        contracts = Contract.objects.filter(
+            end__gte=self.get_start_date(),
+            start__lte=self.get_start_date(),
+        ).all()
+        return contracts
+
+    def area_summation(self):
         sum = 0
-        for contract in Contract.objects.filter(
-            end__gte=self.start_date(),
-            start__lte=self.start_date(),
-        ):
-            sum += contract.area
-            invoices = Invoice.objects.filter(
+        contracts = self.valid_contracts()
+        if contracts:
+            for contract in contracts.all():
+                sum += contract.area
+            return sum
+        return 0
+
+    def save(self, *arg, **kwargs):
+        if self.pk:
+            if not self.is_issue:
+                self.usage_sum = None
+                self.ratio = None
+            elif not self.is_ready():
+                self.is_issue = False
+                self.usage_sum = None
+                self.ratio = None
+            else:
+                self.usage_sum = self.get_usage_sum()
+                self.ratio = self.get_ratio()
+        else:
+            self.is_issue = False
+        self.start_date = self.get_start_date()
+        self.public_share = self.get_public_share()
+        self.public_usage = self.get_public_usage()
+        self.total_public = self.get_total_public()
+        self.area_sum = self.area_summation()
+        self.none_tax = self.get_none_tax()
+        self.unit_price = self.get_unit_price()
+        super(Bill, self).save(*arg, **kwargs)
+
+        contracts = self.valid_contracts()
+        for contract in contracts:
+            Invoice.objects.update_or_create(
                 bill=self,
                 contract=contract,
             )
-            if not invoices:
-                Invoice(
-                    bill=self,
-                    contract=contract,
-                ).save()
-            else:
-                invoices.update(
-                    bill=self,
-                    contract=contract,
-                )
-        self.area_sum = sum
-        super().save(**kwargs)
 
     def __str__(self):
-        prev_month = self.start_date()
+        prev_month = self.start_date
         return f"{prev_month.strftime('%Y년 %m월 이용내역')}"
 
-    public_share.short_description = "공용기본전기료"
-    public_usage.short_description = "공용누적전기료"
-    total_public.short_description = "총공용전기료"
-    none_tax.short_description = "부가세전 청구금"
-    start_date.short_description = "시작일"
-    unit_price.short_description = "전력단위당 단가"
     usage_sum.short_description = "사용량 총합"
-    ratio.short_description = "소실율"
 
     class Meta:
         verbose_name = "청구서"
@@ -114,10 +154,9 @@ class Bill(TimeStampModel):
 
 
 class Invoice(TimeStampModel):
-    is_issue = models.BooleanField(verbose_name="발행여부", default=False)
+    is_payed = models.BooleanField(verbose_name="입금여부", default=False)
     usage = models.PositiveIntegerField(
-        verbose_name="호실별 사용량",
-        help_text="호실별 검침량",
+        verbose_name="검침량",
         blank=True,
         null=True,
     )
@@ -135,50 +174,103 @@ class Invoice(TimeStampModel):
         verbose_name="당월 청구서 정보",
     )
 
-    def usage_ratio(self):
-        if self.usage:
-            return f"{round(self.usage / self.bill.usage_sum()*100,3)}%"
+    public_share = models.PositiveIntegerField(verbose_name="공용 기본전기료")
+    area_fee = models.PositiveIntegerField(verbose_name="기본관리비")
+    basic = models.PositiveIntegerField(verbose_name="기본전기료")
+    ratio_usage = models.PositiveIntegerField(null=True, verbose_name="전력사용량")
+    add_unit = models.PositiveIntegerField(null=True, verbose_name="전력사용요금")
+    without_tax = models.PositiveIntegerField(null=True, verbose_name="전기요금")
+    tax = models.PositiveIntegerField(null=True, verbose_name="부가세")
+    add_tax = models.PositiveIntegerField(null=True, verbose_name="사용자 합계")
+    public_usage = models.PositiveIntegerField(null=True, verbose_name="공용 전력사용요금")
+    public = models.PositiveIntegerField(null=True, verbose_name="공용 합계")
+    total = models.PositiveIntegerField(null=True, verbose_name="총합")
 
-    def basic(self):
-        return int(self.bill.basic * self.contract.area / (self.bill.area_sum))
+    def get_basic(self):
+        return int(self.bill.basic * (self.contract.area / self.bill.area_sum))
 
-    def add_unit(self):
-        if self.bill.unit_price() and self.usage:
-            return int(self.bill.unit_price() * self.usage)
+    def get_public_share(self):
+        return int(self.bill.public_share * (self.contract.area / self.bill.area_sum))
 
-    def without_tax(self):
-        if (self.usage) and self.bill.unit_price():
-            return int(
-                self.bill.unit_price() * self.usage
-                + int(self.bill.basic * (self.contract.area / self.bill.area_sum))
-            )
+    def get_area_fee(self):
+        return int(self.contract.area * self.contract.area_fee)
 
-    def tax(self):
-        if (self.usage) and self.bill.unit_price():
-            return int(self.without_tax() * 0.1)
+    def get_ratio_usage(self):
+        try:
+            return int(self.bill.ratio * self.usage)
+        except:
+            return None
 
-    def add_tax(self):
-        if self.usage:
-            # + self.bill.basic * (self.contract.area / self.bill.area_sum)
-            return int(self.without_tax() * 1.1)
+    def get_add_unit(self):
+        try:
+            return int(self.bill.unit_price * self.ratio_usage)
+        except:
+            return None
 
-    def public_share(self):
-        return int(self.bill.public_share() * (self.contract.area / self.bill.area_sum))
+    def get_without_tax(self):
+        try:
+            return int(self.add_unit + self.get_basic())
+        except:
+            return None
 
-    def public_usage(self):
-        return int((self.usage / self.bill.usage_sum() * self.bill.public_usage()))
+    def get_tax(self):
+        try:
+            return int(self.without_tax * 0.1)
+        except:
+            return None
 
-    def public(self):
-        return self.public_usage() + self.public_share()
+    def get_add_tax(self):
+        if self.without_tax:
+            return int(self.without_tax + self.tax)
 
-    def area_fee(self):
-        if self.contract:
-            something = self.contract.area * self.contract.area_fee
-            return something
+    # 메서드 필드
 
-    def total(self):
-        if self.add_tax() and self.public():
-            return int(self.add_tax() + self.area_fee() + self.public())
+    def get_public_usage(self):
+        try:
+            return int((self.usage / self.bill.usage_sum) * self.bill.public_usage)
+        except:
+            return None
+
+    def get_public(self):
+        try:
+            return int(self.public_usage + self.public_share)
+        except:
+            return None
+
+    def get_total(self):
+        try:
+            return int(self.add_tax + self.area_fee + self.public)
+        except:
+            return None
+
+    def save(self, *arg, **kwargs):
+        self.basic = self.get_basic()
+        self.public_share = self.get_public_share()
+        self.area_fee = self.get_area_fee()
+        if self.bill.ratio:
+            self.ratio_usage = self.get_ratio_usage()
+            self.add_unit = self.get_add_unit()
+            self.without_tax = self.get_without_tax()
+            self.tax = self.get_tax()
+            self.add_tax = self.get_add_tax()
+            self.public_usage = self.get_public_usage()
+            self.public = self.get_public()
+            self.total = self.get_total()
+        else:
+            self.ratio_usage = None
+            self.add_unit = None
+            self.without_tax = None
+            self.tax = None
+            self.add_tax = None
+            self.public_usage = None
+            self.public = None
+            self.total = None
+        super(Invoice, self).save(*arg, **kwargs)
+
+        if self.bill.is_issue:
+            if self.bill.get_usage_sum() != self.bill.usage_sum:
+                self.bill.is_issue = False
+                self.bill.save()
 
     def __str__(self):
         if self.contract:
@@ -190,9 +282,14 @@ class Invoice(TimeStampModel):
         verbose_name = "인보이스"
         verbose_name_plural = "2. 인보이스"
 
-    public_share.short_descripiton = "공용 기본전기료"
-    public_usage.short_descripiton = "공용 전기사용료"
-    area_fee.short_description = "기본관리비"
-    usage_ratio.short_description = "사용 비율"
-    add_tax.short_description = "부가세 가산"
-    total.short_description = "청구요금"
+
+class OwnerCharge(TimeStampModel):
+    title = models.CharField(max_length=50, verbose_name="항목")
+    charge = models.IntegerField(verbose_name="비용")
+
+    class Meta:
+        verbose_name = "부담내역"
+        verbose_name_plural = "임대인 부담"
+
+    def __str__(self):
+        return self.title

@@ -57,9 +57,11 @@ class LogIn(APIView):
         )
         if user:
             login(request, user)
-            return Response({"ok": "hello"})
+            return Response({"ok": "hello"}, status=HTTP_200_OK)
         else:
-            return Response({"error": "password might be wrong"})
+            return Response(
+                {"error": "password might be wrong"}, status=HTTP_400_BAD_REQUEST
+            )
 
 
 class LogOut(APIView):
@@ -75,8 +77,8 @@ class ChangePassword(APIView):
 
     def put(self, request):
         user = request.user
-        old_password = request.data.get("old_password")
-        new_password = request.data.get("new_password")
+        old_password = request.data.get("oldPW")
+        new_password = request.data.get("newPW")
         if not old_password or not new_password:
             raise ParseError
 
