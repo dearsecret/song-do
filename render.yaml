@@ -1,12 +1,12 @@
 databases:
-  - name: songdo
+  - name: songdo-db
     databaseName: songdo
     user: songdo
     region: singapore
 
 services:
   - type: web
-    name: songdo
+    name: songdo-backend
     env: python
     region: singapore
     buildCommand: "./build.sh"
