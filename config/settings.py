@@ -174,6 +174,8 @@ else:
 CORS_ALLOW_CREDENTIALS = True
 
 if not DEBUG:
+    SESSION_COOKIE_DOMAIN = ".song-do.com"
+    CSRF_COOKIE_DOMAIN = ".song-do.com"
     sentry_sdk.init(
         dsn="https://8d1fc96cfc9442f48d83b2779106a351@o4504582616252416.ingest.sentry.io/4504582620053504",
         integrations=[
