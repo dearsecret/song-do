@@ -1,12 +1,12 @@
 databases:
-  - name: sondo
-    databaseName: sondo
-    user: sondo
+  - name: songdo
+    databaseName: songdo
+    user: songdo
     region: singapore
 
 services:
   - type: web
-    name: sondo
+    name: songdo
     env: python
     buildCommand: "./build.sh"
     startCommand: "gunicorn config.wsgi:application"
