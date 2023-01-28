@@ -37,6 +37,7 @@ DEBUG = "RENDER" not in os.environ
 
 ALLOWED_HOSTS = [
     "localhost",
+    "backend.song-do.com",
 ]
 
 RENDER_EXTERNAL_HOSTNAME = os.environ.get("RENDER_EXTERNAL_HOSTNAME")
@@ -168,8 +169,8 @@ if DEBUG:
     CORS_ALLOWED_ORIGINS = ["http://127.0.0.1:3000"]
     CSRF_TRUSTED_ORIGINS = ["http://127.0.0.1:3000"]
 else:
-    CORS_ALLOWED_ORIGINS = ["https://songdo-frontend.onrender.com"]
-    CSRF_TRUSTED_ORIGINS = ["https://songdo-frontend.onrender.com"]
+    CORS_ALLOWED_ORIGINS = ["https://song-do.com"]
+    CSRF_TRUSTED_ORIGINS = ["https://song-do.com"]
 
 CORS_ALLOW_CREDENTIALS = True
 
