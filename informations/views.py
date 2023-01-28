@@ -24,6 +24,9 @@ class Check(APIView):
         try:
             custNo = request.query_params.get("custNo")
             bill_ym = request.query_params.get("bill_ym")
+            bill_ym = int(bill_ym)
+            if not len(bill_ym) == 6:
+                return Response({"error": "날짜형식을 확인해주세요."})
             cust = Customer.objects.get(custNum=custNo)
         except Customer.DoesNotExist:
             return Response({"error": "고객번호를 확인해주세요"})
