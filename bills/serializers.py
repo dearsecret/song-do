@@ -38,6 +38,7 @@ class BillDetailSerializer(serializers.ModelSerializer):
 
 class InvoiceListSerializer(serializers.ModelSerializer):
     bill = BillListSerializer(read_only=True)
+    contract = ContractSerializer(read_only=True)
 
     class Meta:
         model = Invoice
@@ -46,7 +47,7 @@ class InvoiceListSerializer(serializers.ModelSerializer):
             "is_payed",
             "bill",
             "__str__",
-            "usage",
+            "contract",
         )
 
 
