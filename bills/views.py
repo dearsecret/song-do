@@ -52,10 +52,10 @@ class InvoiceList(APIView):
         start = (page - 1) * page_size
         end = start + page_size
 
-        if request.user.is_staff:
-            invoice = Invoice.objects.all()[start:end]
-        else:
-            invoice = Invoice.objects.filter(contract__customer=request.user)[start:end]
+        # if request.user.is_staff:
+        invoice = Invoice.objects.all()[start:end]
+        # else:
+        #     invoice = Invoice.objects.filter(contract__customer=request.user)[start:end]
         serializer = InvoiceListSerializer(invoice, many=True)
         return Response(serializer.data)
 
