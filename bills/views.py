@@ -48,7 +48,7 @@ class InvoiceList(APIView):
             page = int(page)
         except ValueError:
             page = 1
-        page_size = 9
+        page_size = 10
         start = (page - 1) * page_size
         end = start + page_size
 
