@@ -43,17 +43,17 @@ class InvoiceList(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        try:
-            page = request.data.get("page", 1)
-            page = int(page)
-        except ValueError:
-            page = 1
-        page_size = 10
-        start = (page - 1) * page_size
-        end = start + page_size
+        # try:
+        #     page = request.data.get("page", 1)
+        #     page = int(page)
+        # except ValueError:
+        #     page = 1
+        # page_size = 10
+        # start = (page - 1) * page_size
+        # end = start + page_size
 
-        # if request.user.is_staff:
-        invoice = Invoice.objects.all()[start:end]
+        # if request.user.is_staff:[start:end]
+        invoice = Invoice.objects.all()
         # else:
         #     invoice = Invoice.objects.filter(contract__customer=request.user)[start:end]
         serializer = InvoiceListSerializer(invoice, many=True)
