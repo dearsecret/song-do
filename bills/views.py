@@ -53,7 +53,7 @@ class InvoiceList(APIView):
         # end = start + page_size
 
         # if request.user.is_staff:[start:end]
-        invoice = Invoice.objects.all()
+        invoice = Invoice.objects.all()[::-1]
         # else:
         #     invoice = Invoice.objects.filter(contract__customer=request.user)[start:end]
         serializer = InvoiceListSerializer(invoice, many=True)
@@ -73,7 +73,7 @@ class InvoiceDetail(APIView):
         # 권한 수정 요망
         invoice = self.get_object(pk)
         serializer = InvoiceDetailSerializer(invoice)
-        if not request.user.is_host:
-            if request.user != invoice.contract.customer:
-                raise PermissionDenied()
+        # if not request.user.is_host:
+        #     if request.user != invoice.contract.customer:
+        #         raise PermissionDenied()
         return Response(serializer.data)

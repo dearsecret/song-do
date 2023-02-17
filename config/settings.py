@@ -61,6 +61,7 @@ PROJECT_APPS = [
     "bills.apps.BillsConfig",
     "notices.apps.NoticesConfig",
     "informations.apps.InformationsConfig",
+    "promotions.apps.PromotionsConfig",
 ]
 
 THIRD_PARTY = ["rest_framework", "corsheaders", "dateutil"]
