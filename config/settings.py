@@ -31,6 +31,7 @@ environ.Env.read_env(os.path.join(BASE_DIR, ".env"))
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = env("SECRET_KEY")
 BILLING_KEY = env("BILLING_KEY")
+POWER_KEY = env("POWER_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = "RENDER" not in os.environ
@@ -64,7 +65,12 @@ PROJECT_APPS = [
     "promotions.apps.PromotionsConfig",
 ]
 
-THIRD_PARTY = ["rest_framework", "corsheaders", "dateutil"]
+THIRD_PARTY = [
+    "rest_framework",
+    "corsheaders",
+    "dateutil",
+    "django_apscheduler",
+]
 INSTALLED_APPS = SYSTEM_APPS + THIRD_PARTY + PROJECT_APPS
 
 
@@ -174,6 +180,9 @@ else:
     CSRF_TRUSTED_ORIGINS = ["https://song-do.com"]
 
 CORS_ALLOW_CREDENTIALS = True
+
+APSCHEDULER_DATETIME_FORMAT = "N j, Y, f:s a"
+SCHEDULER_DEFAULT = True
 
 if not DEBUG:
     SESSION_COOKIE_DOMAIN = ".song-do.com"

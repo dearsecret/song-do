@@ -4,6 +4,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import NotFound
 from .serializers import NoticeListSerializer, NoticeDetailSerializer
 from .models import Notice
+import time
 
 # Create your views here.
 
