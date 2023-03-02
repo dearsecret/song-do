@@ -49,6 +49,6 @@ class Check(APIView):
 
 class Weather(APIView):
     def get(self, request):
-        weathers = WeatherFcst.objects.all()
-        serializer = WeatherSerializer(weathers, many=True)
+        weathers = WeatherFcst.objects.order_by("-pk").all()[0]
+        serializer = WeatherSerializer(weathers)
         return Response(serializer.data)
