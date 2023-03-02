@@ -2,10 +2,10 @@ from django.conf import settings
 import requests
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAdminUser
-from rest_framework.exceptions import ParseError
 from rest_framework.response import Response
-from .serializers import CustSerializer, BillingSerializer
+from .serializers import CustSerializer, BillingSerializer, WeatherSerializer
 from .models import Customer, Billing
+from realtimes.models import WeatherFcst
 
 
 class CustNumList(APIView):
@@ -45,3 +45,10 @@ class Check(APIView):
             return Response(data)
         else:
             return Response(serializer.errors)
+
+
+class Weather(APIView):
+    def get(self, request):
+        weathers = WeatherFcst.objects.all()
+        serializer = WeatherSerializer(weathers, many=True)
+        return Response(serializer.data)

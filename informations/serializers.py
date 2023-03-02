@@ -1,5 +1,6 @@
 from rest_framework.serializers import ModelSerializer
 from .models import Customer, Billing
+from realtimes.models import WeatherFcst
 
 
 class CustSerializer(ModelSerializer):
@@ -16,6 +17,15 @@ class BillingSerializer(ModelSerializer):
 
     class Meta:
         model = Billing
+        exclude = (
+            "created_at",
+            "updated_at",
+        )
+
+
+class WeatherSerializer(ModelSerializer):
+    class Meta:
+        model = WeatherFcst
         exclude = (
             "created_at",
             "updated_at",

@@ -32,6 +32,7 @@ environ.Env.read_env(os.path.join(BASE_DIR, ".env"))
 SECRET_KEY = env("SECRET_KEY")
 BILLING_KEY = env("BILLING_KEY")
 POWER_KEY = env("POWER_KEY")
+FORECAST_KEY = env("FORECAST_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = "RENDER" not in os.environ
@@ -63,6 +64,7 @@ PROJECT_APPS = [
     "notices.apps.NoticesConfig",
     "informations.apps.InformationsConfig",
     "promotions.apps.PromotionsConfig",
+    "realtimes.apps.RealtimesConfig",
 ]
 
 THIRD_PARTY = [
@@ -182,6 +184,7 @@ else:
 CORS_ALLOW_CREDENTIALS = True
 
 APSCHEDULER_DATETIME_FORMAT = "N j, Y, f:s a"
+APSCHEDULER_RUN_NOW_TIMEOUT = 30
 SCHEDULER_DEFAULT = True
 
 if not DEBUG:

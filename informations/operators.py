@@ -1,55 +1,60 @@
 from django.utils import timezone
+from django.db import transaction
 from django.conf import settings
-import logging
 import requests
+from datetime import timedelta
 from apscheduler.schedulers.background import BackgroundScheduler
-from apscheduler.triggers.cron import CronTrigger
-from django_apscheduler.jobstores import DjangoJobStore
-from informations.models import Customer, Billing
-
-logger = logging.getLogger(__name__)
+from realtimes.models import WeatherFcst
 
 
-def my_job():
-    url = "https://opm.kepco.co.kr:11080/OpenAPI/getCustBillData"
-    data_month = timezone.now().date().strftime("%Y%m")
-    for cust in Customer.objects.all():
-        params = {
-            "custNo": cust.custNum,
-            "serviceKey": settings.POWER_KEY,
-            "dataMonth": data_month,
-            "returnType": "JSON",
-        }
-        res = requests.get(url, params=params)
-        if res.status_code == 200:
-            res = res.json()
-            try:
-                billing = res.get("custBillDataInfoList").get("custBillDataInfo")
-                if not Billing.objects.filter(
-                    bill_ym=billing.bill_ym, custNo=billing.custNo
-                ).exists():
-                    Billing.save(**billing)
-            except:
-                pass
+def get_forecast():
+    url = "https://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getUltraSrtFcst"
+    now = timezone.localtime(timezone.now())
+    if now.minute < 45:
+        now = now + timedelta(minutes=-45)
+
+    base_date = now.strftime("%Y%m%d")
+    # 매시각 30분에 생성되고 45분 이후에 호출 가능
+    # 1000번 호출 가능하여, 데이터베이스 업데이트를 통해 안정적인 api 제공을 목적으로함
+    # 하루 24*60//10 = 144번 업데이트
+    # 개발모드에서는 reload 하므로 , python manage.py runserver --noreload
+    base_time = now.strftime("%H") + "30"
+    params = {
+        "numOfRows": "60",
+        "pageNo": "1",
+        "base_date": base_date,
+        "base_time": base_time,
+        "nx": "54",
+        "ny": "123",
+        "dataType": "JSON",
+        "serviceKey": settings.FORECAST_KEY,
+    }
+    res = requests.get(url, params=params)
+    if res.status_code == 200:
+        res = res.json()
+        try:
+            fcsts = res.get("response").get("body").get("items").get("item")
+            with transaction.atomic():
+                for i in fcsts:
+                    new_value = {i.get("category"): i.get("fcstValue")}
+                    WeatherFcst.objects.update_or_create(
+                        fcstDate=i.get("fcstDate"),
+                        fcstTime=i.get("fcstTime"),
+                        defaults=new_value,
+                    )
+                expired = WeatherFcst.objects.filter(updated_at__lt=now)
+                if expired.exists():
+                    expired.delete()
+        except:
+            pass
 
 
 def start():
-    def handle(self, *args, **options):
-        scheduler = BackgroundScheduler(timezone=settings.TIME_ZONE)
-        scheduler.add_jobstore(DjangoJobStore(), "default")
-        scheduler.add_job(
-            my_job,
-            trigger=CronTrigger(day="20", hour="09", minute="00"),
-            id="my_job",  # id는 고유해야합니다.
-            max_instances=1,
-            replace_existing=True,
-        )
-        logger.info("Added job 'my_job_a'.")
-
-        try:
-            logger.info("Starting scheduler...")
-            scheduler.start()  # 없으면 동작하지 않습니다.
-        except KeyboardInterrupt:
-            logger.info("Stopping scheduler...")
-            scheduler.shutdown()
-            logger.info("Scheduler shut down successfully!")
+    scheduler = BackgroundScheduler(timezone=settings.TIME_ZONE)
+    scheduler.add_job(
+        get_forecast,
+        "cron",
+        minute="45",
+        id="forecast",
+    )
+    scheduler.start()
