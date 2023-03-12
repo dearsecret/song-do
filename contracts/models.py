@@ -67,7 +67,7 @@ class Rent(TimeStampModel):
             return False
 
     def __str__(self):
-        return f"{self.payed_cnt}/{self.contract.rents.count()}"
+        return f"{self.payed_cnt}회"
 
     class Meta:
         verbose_name = "납부회차"
