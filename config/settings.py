@@ -33,6 +33,9 @@ SECRET_KEY = env("SECRET_KEY")
 BILLING_KEY = env("BILLING_KEY")
 POWER_KEY = env("POWER_KEY")
 FORECAST_KEY = env("FORECAST_KEY")
+SMS_SECRET_KEY = env("SMS_SECRET_KEY")
+SMS_ACCESS_KEY = env("SMS_ACCESS_KEY")
+SMS_SERVICE_ID = env("SMS_SERVICE_ID")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = "RENDER" not in os.environ
@@ -40,6 +43,7 @@ DEBUG = "RENDER" not in os.environ
 ALLOWED_HOSTS = [
     "localhost",
     "backend.song-do.com",
+    "127.0.0.1",
 ]
 
 RENDER_EXTERNAL_HOSTNAME = os.environ.get("RENDER_EXTERNAL_HOSTNAME")
@@ -65,6 +69,7 @@ PROJECT_APPS = [
     "informations.apps.InformationsConfig",
     "promotions.apps.PromotionsConfig",
     "realtimes.apps.RealtimesConfig",
+    "messengers.apps.MessengersConfig",
 ]
 
 THIRD_PARTY = [

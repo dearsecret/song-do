@@ -1,12 +1,8 @@
 from django.utils import timezone
 from rest_framework.views import APIView
-from rest_framework.permissions import (
-    IsAuthenticated,
-    IsAdminUser,
-)
-from rest_framework.exceptions import NotFound, PermissionDenied
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.exceptions import NotFound
 from rest_framework.response import Response
-import requests
 from .serializers import (
     BillListSerializer,
     BillDetailSerializer,
@@ -14,7 +10,6 @@ from .serializers import (
     InvoiceDetailSerializer,
 )
 from .models import Invoice, Bill
-import time
 
 
 class BillList(APIView):
