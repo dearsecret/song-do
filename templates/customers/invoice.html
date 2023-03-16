@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <div style="font-weight : bold;font-size : 24px; padding : 3% 4%;background : #F8F6EF; max-width: 100%;">
+        <p style="width : 100%;">이용내역</p>
+        <div style="height : 15px;"> </div>
+        <div style="font-weight : bold;font-size : 18px;">
+            <p style="width : 100%;">사용자 정보</p>
+        </div>
+        <div style="border-style: solid;border-width: 1px;border-color : rgba(0,0,0,0.1);border-radius : 10px;padding : 1%;font-weight : normal;font-size : 16px;background : white;margin-bottom : 20px;max-width : 100%;display : block;">
+          <div style="padding : 0px 2%;display : flex;">
+            <p style="width : 100%;">호실</p>
+            <p >{{name}}</p>
+          </div>
+          <div style="padding : 0px 2%;display : flex;">
+            <p style="width : 100%;">평형</p>
+            <p >{{area}}</p>
+          </div>
+          <div style="padding : 0px 2%;display : flex;">
+            <p style="width : 100%;">시작일</p>
+            <p style="width:100%; text-align: end;">{{start}}</p>
+          </div>
+          <div style="padding : 0px 2%;display : flex;">
+            <p style="width : 100%;">종료일</p>
+            <p style="width:100%; text-align: end;">{{end}}</p>
+          </div>
+          <div style="padding : 0px 2%;display : flex;">
+            <p style="width : 100%;">검침량</p>
+            <p >{{usage}}</p>
+          </div>
+          <div style="padding : 0px 2%;display : flex;">
+            <p style="width : 100%;">사용량</p>
+            <p >{{ratio_usage}}</p>
+          </div>
+      
+        </div>
+        <div style="height : 15px;"> </div>
+        <div style="font-weight : bold;font-size : 18px;">
+            <p style="width : 100%;">1. 공용전기료 이용내역</p>
+        </div>
+        <div style="border-style: solid;border-width: 1px;border-color : rgba(0,0,0,0.1);border-radius : 10px;padding : 1%;font-weight : normal;font-size : 16px;background : white;margin-bottom : 20px;max-width : 100%;display : block;">
+          <div style="padding : 0px 2%;display : flex;">
+            <p style="width : 100%;">공용기본료</p>
+            <p >{{public_share}}</p>
+          </div>
+          <div style="padding : 0px 2%;display : flex;">
+            <p style="width : 100%;">공용사용량</p>
+            <p >{{public_usage}}</p>
+          </div>
+          <div style="padding : 0px 2%;display : flex;">
+            <p style="width : 100%;">-합계</p>
+            <p >{{public}}</p>
+          </div>
+      
+        </div>
+        <div style="height:10px;"> </div>
+        <div style="font-weight : bold;font-size : 18px;">
+            <p style="width : 100%;">2. 관리비</p>
+        </div>
+        <div style="border-style: solid;border-width: 1px;border-color : rgba(0,0,0,0.1);border-radius : 10px;padding : 1%;font-weight : normal;font-size : 16px;background : white;margin-bottom : 20px;max-width : 100%;display : block;">
+            <div style="padding : 0px 2%;display : flex;">
+                <p style="width : 100%;">일반(기본)관리비</p>
+                <p >{{area_fee}}</p>
+            </div>
+            <div style="padding : 0px 2%;display : flex;">
+                <p style="width : 100%;">기타 비용</p>
+                <p style="width : 100%; text-align:end;">한시적 임대인 부담</p>
+            </div>
+            <div style="padding : 0px 2%;display : flex;">
+                <p style="width : 100%;">-합계</p>
+                <p >{{area_fee}}</p>
+            </div>
+        </div>
+        <div style="height:10px;"></div>
+        <div style="font-weight : bold;font-size : 18px;">
+            <p style="width : 100%;">3. 전력사용량요금</p>
+        </div>
+        <div style="border-style: solid;border-width: 1px;border-color : rgba(0,0,0,0.1);border-radius : 10px;padding : 1%;font-weight : normal;font-size : 16px;background : white;margin-bottom : 20px;max-width : 100%;display : block;">
+          	<div style="padding : 0px 2%;display : flex;">
+                <p style="width : 100%;">① 전력사용량 요금</p>
+                <p >{{add_unit}}</p>
+            </div>
+            <div style="padding : 0px 2%;display : flex;">
+                <p style="width : 100%;">② 기본요금</p>
+                <p >{{basic}}</p>
+            </div>
+
+            <div style="padding : 0px 2%;display : flex;">
+                <p style="width : 100%;">전기료(①+②)</p>
+                <p >{{without_tax}}</p>
+            </div>
+            <div style="padding : 0px 2%;display : flex;">
+                <p style="width : 100%;">부가가치세(10%)</p>
+                <p >{{tax}}</p>
+            </div>
+            <div style="padding : 0px 2%;display : flex;">
+                <p style="width : 100%;">-합계</p>
+                <p >{{add_tax}}</p>
+            </div>
+        </div>
+        <div style="height : 30px;"></div>
+        
+        <div style="border-style: solid;border-width: 1px;border-color : rgba(0,0,0,0.1);border-radius : 10px;padding : 1%;font-weight : normal;font-size : 16px;background : white;margin-bottom : 20px;max-width : 100%;display : block;">
+          <div style="padding : 0px 5%;display : flex; width: 100%; text-align:end;">
+            <h3 style="text-align:start ;width : 45%;">청구금액</h3>
+            <h3 style="width : 45%;">{{total}} 원</h3>
+          </div>
+        </div>
+        <div style="height : 30px;"></div>
+      </div>
+    <div style="height : 30px;"></div>
+	<div style="text-align:end">
+        <div>
+            익월 10일 이후 미납시 연체료가 발생할 수 있습니다.
+        </div>
+    	<div>
+	        자세한 사항은 https://song-do.com 에서 확인하실 수 있습니다
+        </div>
+    </div>
+
+</body>
+</html>

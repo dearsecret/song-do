@@ -16,6 +16,9 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 
+# from django.conf import settings
+# from django.conf.urls.static import static
+
 admin.site.site_header = "송도 관리자"
 
 urlpatterns = [
@@ -27,3 +30,5 @@ urlpatterns = [
     path("api/v1/informations/", include("informations.urls")),
     path("api/v1/promotions/", include("promotions.urls")),
 ]
+
+# + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

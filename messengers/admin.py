@@ -4,4 +4,8 @@ from .models import SMS
 
 @admin.register(SMS)
 class SMSAdmin(admin.ModelAdmin):
-    pass
+    readonly_fields = (
+        "content",
+        "to",
+        "invoice",
+    )
