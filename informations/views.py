@@ -1,10 +1,16 @@
 from django.conf import settings
 import requests
 from rest_framework.views import APIView
-from rest_framework.permissions import IsAdminUser
+from rest_framework.permissions import IsAdminUser, IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
-from .serializers import CustSerializer, BillingSerializer, WeatherSerializer
+from .serializers import (
+    CustSerializer,
+    BillingSerializer,
+    WeatherSerializer,
+    AccountingSerializer,
+)
 from .models import Customer, Billing
+from .models import Accounting as Account_model
 from realtimes.models import WeatherFcst
 
 
@@ -51,4 +57,13 @@ class Weather(APIView):
     def get(self, request):
         weathers = WeatherFcst.objects.all().order_by("pk")[0]
         serializer = WeatherSerializer(weathers)
+        return Response(serializer.data)
+
+
+class Accounting(APIView):
+    permission_classes = [IsAuthenticatedOrReadOnly]
+
+    def get(self, request):
+        accounting = Account_model.objects.order_by("-date").all()[:10]
+        serializer = AccountingSerializer(accounting, many=True)
         return Response(serializer.data)

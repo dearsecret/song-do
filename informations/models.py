@@ -46,3 +46,22 @@ class Billing(TimeStampModel):
     class Meta:
         verbose_name = "청구정보"
         verbose_name_plural = "고객청구정보 목록"
+
+
+class Accounting(TimeStampModel):
+    class CountKind(models.TextChoices):
+        DEPOSIT = ("deposit", "입금")
+        WITHDRAWAL = ("withdrawal", "출금")
+
+    name = models.CharField(max_length=120)
+    price = models.IntegerField()
+    description = models.TextField(max_length=200, null=True, blank=True)
+    kind = models.CharField(
+        max_length=10,
+        choices=CountKind.choices,
+    )
+    date = models.DateField()
+
+    class Meta:
+        verbose_name = "회계내역"
+        verbose_name_plural = "회계내역 목록"
