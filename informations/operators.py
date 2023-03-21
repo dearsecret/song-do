@@ -87,8 +87,8 @@ def check_unbilled():
                                 content=content, invoice=invoice, to=phone_number
                             ).save()
                             sent_lst.append(phone_number)
-                if sent_lst:
-                    send_sms("01044768444", f"{len(sent_lst)}건 관리비미납 SMS발송완료")
+            if sent_lst:
+                send_sms("01044768444", f"{len(sent_lst)}건 관리비미납 SMS발송완료")
     except:
         pass
 

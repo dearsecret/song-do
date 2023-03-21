@@ -50,3 +50,38 @@ def send_sms(phone_number, content):
         res.raise_for_status()
     except:
         pass
+
+
+def send_lms(phone_number, subject, content):
+
+    # 환경변수
+    access_key = settings.SMS_ACCESS_KEY
+    urn = f"/sms/v2/services/{settings.SMS_SERVICE_ID}/messages"
+    url = f"https://sens.apigw.ntruss.com{urn}"
+
+    timestamp = f"{int(timezone.localtime(timezone.now()).timestamp()*1000)}"
+
+    headers = {
+        "Content-Type": "application/json; charset=utf-8",
+        "x-ncp-apigw-timestamp": timestamp,
+        "x-ncp-iam-access-key": access_key,
+        "x-ncp-apigw-signature-v2": make_signature(urn, access_key, timestamp),
+    }
+
+    message = {"to": phone_number}
+    body = {
+        "type": "LMS",
+        "contentType": "COMM",
+        "from": "024240187",
+        "subject": subject,
+        "content": content,
+        "messages": [message],
+    }
+
+    json_body = json.dumps(body)
+
+    try:
+        res = requests.post(url, headers=headers, data=json_body)
+        res.raise_for_status()
+    except:
+        pass
