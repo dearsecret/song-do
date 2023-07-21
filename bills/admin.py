@@ -54,7 +54,6 @@ def send_bill(self, request, queryset):
 
 @admin.register(Bill)
 class BillAdmin(admin.ModelAdmin):
-
     fieldsets = (
         (
             "청구일",
@@ -235,7 +234,6 @@ class InvoiceAdmin(admin.ModelAdmin):
 
     readonly_fields = (
         "bill",
-        "contract",
         "basic",
         "public",
         "area_fee",
