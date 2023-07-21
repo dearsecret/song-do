@@ -33,18 +33,17 @@ class Contract(TimeStampModel):
         verbose_name_plural = "계약서"
 
     def save(self, *arg, **kwargs):
-
-        n = count_month(self.start, self.end)
-        for i in range(n):
-            if self.start.day > 28:
-                end = self.start.replace(day=1) + relativedelta(months=i + 2, days=-1)
-            else:
-                end = self.start + relativedelta(months=i + 1, days=-1)
-            if not (
-                Rent.objects.filter(payed_cnt=i + 1, contract=self).exists()
-                or timezone.localtime(timezone.now()).date() > end
-            ):
-                Rent(payed_cnt=i + 1, usage_end=end, contract=self).save()
+        # n = count_month(self.start, self.end)
+        # for i in range(n):
+        #     if self.start.day > 28:
+        #         end = self.start.replace(day=1) + relativedelta(months=i + 2, days=-1)
+        #     else:
+        #         end = self.start + relativedelta(months=i + 1, days=-1)
+        #     if not (
+        #         Rent.objects.filter(payed_cnt=i + 1, contract=self).exists()
+        #         or timezone.localtime(timezone.now()).date() > end
+        #     ):
+        #         Rent(payed_cnt=i + 1, usage_end=end, contract=self).save()
         super(Contract, self).save(*arg, **kwargs)
 
 
