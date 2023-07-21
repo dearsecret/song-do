@@ -274,9 +274,9 @@ class Invoice(TimeStampModel):
 
     def __str__(self):
         if self.contract:
-            return self.contract.name
+            return f"{self.contract.name}"
         else:
-            return self.bill
+            return f"{self.bill}"
 
     class Meta:
         verbose_name = "인보이스"
@@ -292,4 +292,4 @@ class OwnerCharge(TimeStampModel):
         verbose_name_plural = "임대인 부담"
 
     def __str__(self):
-        return self.title
+        return f"{self.title}"
